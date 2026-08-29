@@ -59,49 +59,49 @@ public final class GCEItems {
             Material.SMOKER,
             "",
             LoreBuilder.machine(MachineTier.MEDIUM, MachineType.MACHINE),
-            LoreBuilder.powerPerSecond(6)
+            LoreBuilder.powerPerSecond(60)
         );
         EXCITATION_CHAMBER = GeneticChickengineering.getLocalization().getItem(
             "EXCITATION_CHAMBER",
             Material.IRON_BLOCK,
             "",
             LoreBuilder.machine(MachineTier.MEDIUM, MachineType.MACHINE),
-            LoreBuilder.powerPerSecond(10)
+            LoreBuilder.powerPerSecond(100)
         );
         EXCITATION_CHAMBER_2 = GeneticChickengineering.getLocalization().getItem(
             "EXCITATION_CHAMBER_2",
             Material.IRON_BLOCK,
             "",
             LoreBuilder.machine(MachineTier.ADVANCED, MachineType.MACHINE),
-            LoreBuilder.powerPerSecond(15)
+            LoreBuilder.powerPerSecond(150)
         );
         EXCITATION_CHAMBER_3 = GeneticChickengineering.getLocalization().getItem(
             "EXCITATION_CHAMBER_3",
             Material.IRON_BLOCK,
             "",
             LoreBuilder.machine(MachineTier.END_GAME, MachineType.MACHINE),
-            LoreBuilder.powerPerSecond(100)
+            LoreBuilder.powerPerSecond(1000)
         );
         PRIVATE_COOP = GeneticChickengineering.getLocalization().getItem(
             "PRIVATE_COOP",
             Material.BEEHIVE,
             "",
             LoreBuilder.machine(MachineTier.MEDIUM, MachineType.MACHINE),
-            LoreBuilder.powerPerSecond(2)
+            LoreBuilder.powerPerSecond(20)
         );
         RESTORATION_CHAMBER = GeneticChickengineering.getLocalization().getItem(
             "RESTORATION_CHAMBER",
             Material.PINK_CONCRETE,
             "",
             LoreBuilder.machine(MachineTier.MEDIUM, MachineType.MACHINE),
-            LoreBuilder.powerPerSecond(4)
+            LoreBuilder.powerPerSecond(40)
         );
         GROWTH_CHAMBER = GeneticChickengineering.getLocalization().getItem(
             "GROWTH_CHAMBER",
             Material.GREEN_CONCRETE,
             "",
             LoreBuilder.machine(MachineTier.ADVANCED, MachineType.MACHINE),
-            LoreBuilder.powerPerSecond(20)
+            LoreBuilder.powerPerSecond(200)
         );
         // @formatter:on
     }
