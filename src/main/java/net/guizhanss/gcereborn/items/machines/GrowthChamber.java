@@ -65,6 +65,10 @@ public class GrowthChamber extends AbstractMachine {
         output.setAmount(1);
         ItemMeta outputMeta = output.getItemMeta();
         JsonObject adapter = PersistentDataAPI.get(outputMeta, Keys.POCKET_CHICKEN_ADAPTER, PocketChicken.ADAPTER);
+        if (adapter == null) {
+            // no entity data (e.g. dictionary icon), cannot grow
+            return null;
+        }
         var dnaState = PersistentDataAPI.getIntArray(outputMeta, Keys.POCKET_CHICKEN_DNA);
         adapter.addProperty("baby", false);
         adapter.addProperty("_age", 6000);

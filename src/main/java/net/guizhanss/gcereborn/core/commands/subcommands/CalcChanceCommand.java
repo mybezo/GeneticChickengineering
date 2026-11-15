@@ -27,6 +27,11 @@ public final class CalcChanceCommand extends AbstractSubCommand implements DnaCo
             return;
         }
 
+        if (args.length < 3) {
+            GeneticChickengineering.getLocalization().sendMessage(sender, "usage", "/gce calcchance <parent1DNA> <parent2DNA> <childDNA>");
+            return;
+        }
+
         for (int i = 0; i < 3; i++) {
             if (!DNA.isValidSequence(args[i])) {
                 GeneticChickengineering.getLocalization().sendMessage(sender, "invalid-dna-notation", args[i]);

@@ -1,6 +1,6 @@
 package net.guizhanss.gcereborn.utils;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -12,6 +12,7 @@ import com.google.common.base.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Chicken;
 import org.bukkit.inventory.ItemStack;
@@ -45,6 +46,17 @@ public final class ChickenUtils {
      */
     public boolean isPocketChicken(@Nullable ItemStack item) {
         return item != null && !item.getType().isAir() && item.hasItemMeta() && PersistentDataAPI.hasIntArray(item.getItemMeta(), Keys.POCKET_CHICKEN_DNA);
+    }
+
+    /**
+     * Determine whether a pocket chicken {@link ItemStack} holds entity data.
+     * Dictionary icons only hold DNA.
+     *
+     * @param item The {@link ItemStack} to check.
+     * @return Whether the item has entity data.
+     */
+    public boolean hasEntityData(@Nullable ItemStack item) {
+        return item != null && item.hasItemMeta() && PersistentDataAPI.hasString(item.getItemMeta(), Keys.POCKET_CHICKEN_ADAPTER);
     }
 
     /**
@@ -92,7 +104,6 @@ public final class ChickenUtils {
         ItemStack item = GCEItems.POCKET_CHICKEN.clone();
 
         DNA dna;
-        String uuid = chicken.getUniqueId().toString();
 
         if (PersistentDataAPI.hasString(chicken, Keys.CHICKEN_DNA)) {
             String dnaStr = PersistentDataAPI.getString(chicken, Keys.CHICKEN_DNA);
@@ -110,8 +121,9 @@ public final class ChickenUtils {
             } else {
                 name = "";
             }
+            // PocketChicken appends " " + WHITE + "(type)" to the name when spawning, strip it fully
             String replace = "(" + ChickenTypes.getDisplayName(dna.getTyping()) + ")";
-            name = name.replace(replace, "");
+            name = name.replace(ChatColor.WHITE + replace, "").replace(replace, "").trim();
             if (name.isEmpty()) {
                 json.addProperty("_customName", (String) null);
                 json.addProperty("_customNameVisible", false);
@@ -212,7 +224,16 @@ public final class ChickenUtils {
      * @return The DNA strength.
      */
     public static int getDNAStrength(@Nonnull ItemStack chicken) {
-        DNA dna = getDNA(chicken);
+        return getDNAStrength(getDNA(chicken));
+    }
+
+    /**
+     * Returns a number which reflects the number of homozygous dominant alleles in the {@link DNA}.
+     *
+     * @param dna The {@link DNA}.
+     * @return The DNA strength.
+     */
+    public static int getDNAStrength(@Nonnull DNA dna) {
         int[] state = dna.getState();
         int str = 6 - dna.getTier();
         for (int i = 0; i < 6; i++) {
@@ -225,7 +246,7 @@ public final class ChickenUtils {
 
     @Nonnull
     private static List<String> getLore(@Nullable JsonObject json, @Nonnull DNA dna) {
-        List<String> lore = new LinkedList<>();
+        List<String> lore;
         var localization = GeneticChickengineering.getLocalization();
         if (json != null) {
             lore = PocketChicken.ADAPTER.getLore(json);
@@ -241,6 +262,8 @@ public final class ChickenUtils {
                 }
                 lore.add(localization.getString("lores.chicken.status.line", status));
             }
+        } else {
+            lore = new ArrayList<>();
         }
         if (dna.isKnown()) {
             lore.add(localization.getString("lores.chicken.dna", dna));
@@ -304,7 +327,8 @@ public final class ChickenUtils {
     }
 
     public void possiblyHarm(@Nullable ItemStack chicken) {
-        if (ThreadLocalRandom.current().nextInt(100) < GeneticChickengineering.getConfigService().getPainChance()) {
+        // pain chance allows decimals, so a double comparison is needed
+        if (ThreadLocalRandom.current().nextDouble(100) < GeneticChickengineering.getConfigService().getPainChance()) {
             harm(chicken);
         }
     }

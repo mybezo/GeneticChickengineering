@@ -35,13 +35,18 @@ public final class MakeChickenCommand extends AbstractSubCommand implements DnaC
             return;
         }
 
+        if (args.length < 1) {
+            GeneticChickengineering.getLocalization().sendMessage(sender, "usage", "/gce makechicken <DNA> [baby]");
+            return;
+        }
+
         String notation = args[0];
         if (!DNA.isValidSequence(notation)) {
             GeneticChickengineering.getLocalization().sendMessage(sender, "invalid-dna-notation", notation);
             return;
         }
         boolean isBaby = true;
-        if (args.length == 2) {
+        if (args.length >= 2) {
             isBaby = Boolean.parseBoolean(args[1]);
         }
 

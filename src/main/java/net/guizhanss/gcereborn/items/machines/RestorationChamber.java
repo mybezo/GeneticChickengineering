@@ -44,7 +44,7 @@ public class RestorationChamber extends AbstractMachine {
                 continue;
             }
 
-            if (ChickenUtils.isPocketChicken(item)) {
+            if (ChickenUtils.isPocketChicken(item) && ChickenUtils.hasEntityData(item)) {
                 chicken = item;
             } else if (ChickenUtils.isFood(item)) {
                 seed = item;
@@ -56,23 +56,24 @@ public class RestorationChamber extends AbstractMachine {
         }
 
         double health = ChickenUtils.getHealth(chicken);
-        int seedAmount = seed.getAmount();
-        int toConsume = 0;
-        while (seedAmount > 0 && health < 4d) {
-            seedAmount--;
-            toConsume++;
-            health = health + 0.25;
+        if (health >= 4d) {
+            return null;
         }
-        if (toConsume == 0) {
+        // each seed restores 0.25 health
+        int toConsume = Math.min(seed.getAmount(), (int) Math.ceil((4d - health) / 0.25));
+        if (toConsume <= 0) {
             return null;
         }
         ItemStack recipeSeeds = seed.clone();
         recipeSeeds.setAmount(toConsume);
-        ItemStack recipeChick = chicken.clone();
+        // only one chicken is consumed, so only one chicken should be output
+        ItemStack inputChick = chicken.clone();
+        inputChick.setAmount(1);
+        ItemStack recipeChick = inputChick.clone();
         ChickenUtils.heal(recipeChick, toConsume * 0.25);
         MachineRecipe recipe = new MachineRecipe(
             config.isTest() ? 1 : config.getHealRate() * toConsume,
-            new ItemStack[] {recipeSeeds, chicken.clone()},
+            new ItemStack[] {recipeSeeds, inputChick},
             new ItemStack[] {recipeChick}
         );
         if (!InvUtils.fitAll(menu.toInventory(), recipe.getOutput(), getOutputSlots())) {

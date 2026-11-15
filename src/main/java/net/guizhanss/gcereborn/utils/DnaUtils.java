@@ -1,6 +1,7 @@
 package net.guizhanss.gcereborn.utils;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -12,9 +13,24 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class DnaUtils {
 
+    /**
+     * All 729 possible DNA notations never change, so compute them once.
+     */
+    private static final List<String> POSSIBLE_DNA = Collections.unmodifiableList(computePossibleDNA());
+
+    /**
+     * Get all possible DNA notations.
+     *
+     * @return An unmodifiable {@link List} of all possible DNA notations.
+     */
     @Nonnull
     public static List<String> getPossibleDNA() {
-        List<String> dnaList = new LinkedList<>();
+        return POSSIBLE_DNA;
+    }
+
+    @Nonnull
+    private static List<String> computePossibleDNA() {
+        List<String> dnaList = new ArrayList<>(729);
 
         for (int b = 2; b >= 0; b--) {
             for (int c = 2; c >= 0; c--) {

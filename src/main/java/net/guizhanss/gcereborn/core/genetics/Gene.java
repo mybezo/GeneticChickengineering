@@ -44,15 +44,11 @@ public class Gene {
     }
 
     public boolean isHeterozygous() {
-        return alleles[0] == alleles[1];
+        return alleles[0] != alleles[1];
     }
 
     public char split() {
-        int ix = 0;
-        if (ThreadLocalRandom.current().nextDouble() > 0.5) {
-            ix = 1;
-        }
-        return alleles[ix];
+        return alleles[ThreadLocalRandom.current().nextBoolean() ? 1 : 0];
     }
 
     @Override

@@ -1,6 +1,6 @@
 package net.guizhanss.gcereborn.items.machines;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Location;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -64,7 +63,7 @@ public class PrivateCoop extends AbstractMachine {
 
     @Nonnull
     private List<ItemStack> getParents(@Nonnull BlockMenu inv) {
-        List<ItemStack> parents = new LinkedList<>();
+        List<ItemStack> parents = new ArrayList<>(2);
         for (int slot : getInputSlots()) {
             ItemStack parent = inv.getItemInSlot(slot);
             if (parent == null) {
@@ -107,17 +106,26 @@ public class PrivateCoop extends AbstractMachine {
             return null;
         }
 
-        if (GeneticChickengineering.getConfigService().isPainEnabled()) {
-            for (ItemStack parent : parents) {
-                if (!ChickenUtils.survivesPain(parent) && !GeneticChickengineering.getConfigService().isPainDeathEnabled()) {
-                    return null;
+        if (config.isPainEnabled()) {
+            // check all parents first, so no parent gets hurt when the other one cannot work
+            if (!config.isPainDeathEnabled()) {
+                for (ItemStack parent : parents) {
+                    if (!ChickenUtils.survivesPain(parent)) {
+                        return null;
+                    }
                 }
+            }
+            boolean died = false;
+            for (ItemStack parent : parents) {
                 ChickenUtils.possiblyHarm(parent);
                 if (ChickenUtils.getHealth(parent) <= 0d) {
                     ItemUtils.consumeItem(parent, false);
-                    menu.getBlock().getWorld().playSound(menu.getLocation(), Sound.ENTITY_CHICKEN_DEATH, 1f, 1f);
-                    return null;
+                    died = true;
                 }
+            }
+            if (died) {
+                playDeathSound(menu);
+                return null;
             }
         }
 

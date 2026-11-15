@@ -1,6 +1,6 @@
 package net.guizhanss.gcereborn.core.commands.subcommands;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -17,7 +17,7 @@ interface DnaCompletion {
     default List<String> tabComplete(CommandSender sender, String[] args, int... indices) {
         for (int index : indices) {
             if (args.length == index + 1) {
-                List<String> result = new LinkedList<>();
+                List<String> result = new ArrayList<>();
                 for (String dna : DnaUtils.getPossibleDNA()) {
                     if (dna.startsWith(args[index])) {
                         result.add(dna);

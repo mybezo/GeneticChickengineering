@@ -1,7 +1,6 @@
 package net.guizhanss.gcereborn.core.adapters;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,7 +36,7 @@ public interface MobAdapter<T extends LivingEntity> extends PersistentDataType<S
     Class<T> getEntityClass();
 
     default List<String> getLore(JsonObject json) {
-        List<String> lore = new LinkedList<>();
+        List<String> lore = new ArrayList<>();
         LocalizationService localization = GeneticChickengineering.getLocalization();
 
         lore.add("");
@@ -68,7 +67,33 @@ public interface MobAdapter<T extends LivingEntity> extends PersistentDataType<S
     }
 
     default JsonObject fromPrimitive(String primitive, PersistentDataAdapterContext context) {
-        return new JsonParser().parse(primitive).getAsJsonObject();
+        return JsonParser.parseString(primitive).getAsJsonObject();
+    }
+
+    /**
+     * Parse an {@link Attribute} from its saved name.
+     * Attributes were renamed in 1.21.3 (e.g. GENERIC_MAX_HEALTH -> MAX_HEALTH),
+     * so the legacy prefixes are stripped as a fallback.
+     *
+     * @param name The saved name.
+     * @return The {@link Attribute}, or null if not found.
+     */
+    @SuppressWarnings("deprecation")
+    private static Attribute parseAttribute(String name) {
+        try {
+            return Attribute.valueOf(name);
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            for (String prefix : new String[] {"GENERIC_", "PLAYER_", "ZOMBIE_", "HORSE_"}) {
+                if (name != null && name.startsWith(prefix)) {
+                    try {
+                        return Attribute.valueOf(name.substring(prefix.length()));
+                    } catch (IllegalArgumentException ignored) {
+                        // fall through
+                    }
+                }
+            }
+            return null;
+        }
     }
 
     default void apply(T entity, JsonObject json) {
@@ -76,7 +101,12 @@ public interface MobAdapter<T extends LivingEntity> extends PersistentDataType<S
         JsonObject attributes = json.getAsJsonObject("_attributes");
 
         for (Map.Entry<String, JsonElement> entry : attributes.entrySet()) {
-            AttributeInstance instance = entity.getAttribute(Attribute.valueOf(entry.getKey()));
+            Attribute attr = parseAttribute(entry.getKey());
+            if (attr == null) {
+                // unknown attribute (e.g. renamed in a newer Minecraft version), skip it
+                continue;
+            }
+            AttributeInstance instance = entity.getAttribute(attr);
 
             if (instance != null) {
                 for (AttributeModifier modifier : new ArrayList<>(instance.getModifiers())) {
@@ -102,7 +132,9 @@ public interface MobAdapter<T extends LivingEntity> extends PersistentDataType<S
             }
         }
 
-        entity.setHealth(json.get("_health").getAsDouble());
+        // setHealth throws if the value exceeds max health, clamp it to be safe
+        double health = json.get("_health").getAsDouble();
+        entity.setHealth(Math.max(0d, Math.min(health, entity.getMaxHealth())));
         entity.setAbsorptionAmount(json.get("_absorption").getAsDouble());
         entity.setRemoveWhenFarAway(json.get("_removeWhenFarAway").getAsBoolean());
 

@@ -21,9 +21,11 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.DistinctiveItem;
 import io.github.thebusybiscuit.slimefun4.core.attributes.NotPlaceable;
 import io.github.thebusybiscuit.slimefun4.core.handlers.ItemUseHandler;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.implementation.items.SimpleSlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.data.persistent.PersistentDataAPI;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.ItemUtils;
+import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 
 import net.guizhanss.gcereborn.GeneticChickengineering;
 import net.guizhanss.gcereborn.core.adapters.AnimalsAdapter;
@@ -51,11 +53,18 @@ public class PocketChicken extends SimpleSlimefunItem<ItemUseHandler> implements
 
             Block b = block.get();
             Location location = b.getRelative(e.getClickedFace()).getLocation();
-            Chicken entity = b.getWorld().spawn(location.toCenterLocation(), Chicken.class);
+            if (!Slimefun.getProtectionManager().hasPermission(e.getPlayer(), location, Interaction.INTERACT_BLOCK)) {
+                GeneticChickengineering.getLocalization().sendMessage(e.getPlayer(), "no-permission");
+                return;
+            }
 
             ItemMeta meta = e.getItem().getItemMeta();
             JsonObject json = PersistentDataAPI.get(meta, Keys.POCKET_CHICKEN_ADAPTER, ADAPTER);
-            ADAPTER.apply(entity, json);
+            Chicken entity = b.getWorld().spawn(location.toCenterLocation(), Chicken.class);
+            // dictionary icons only carry DNA, they have no entity data
+            if (json != null) {
+                ADAPTER.apply(entity, json);
+            }
             int[] dnaState = PersistentDataAPI.getIntArray(meta, Keys.POCKET_CHICKEN_DNA);
             DNA dna;
             if (dnaState != null) {

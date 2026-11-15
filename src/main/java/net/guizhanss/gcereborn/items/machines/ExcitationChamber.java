@@ -6,7 +6,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
 
@@ -25,7 +24,9 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 
 import net.guizhanss.gcereborn.GeneticChickengineering;
+import net.guizhanss.gcereborn.core.genetics.DNA;
 import net.guizhanss.gcereborn.items.GCEItems;
+import net.guizhanss.gcereborn.items.chicken.ChickenTypes;
 import net.guizhanss.gcereborn.utils.GuiItems;
 import net.guizhanss.gcereborn.utils.ChickenUtils;
 
@@ -107,7 +108,8 @@ public class ExcitationChamber extends AbstractMachine {
 
             // Set the progress bar to always be the resource, since players
             // can abort the recipe if they know the egg is coming
-            ItemStack resourceIcon = ChickenUtils.getResource(chicken);
+            DNA dna = ChickenUtils.getDNA(chicken);
+            ItemStack resourceIcon = ChickenTypes.getProduct(dna.getTyping());
 
             ItemStack chickResource;
             if (ThreadLocalRandom.current().nextInt(100) < config.getResourceFailRate()) {
@@ -129,7 +131,8 @@ public class ExcitationChamber extends AbstractMachine {
              *  Tier 5 | 17-19 sec | 8-9 sec
              *  Tier 6 | 20 sec    | 10 sec
              */
-            int speed = (config.getResourceBaseTime() + ChickenUtils.getResourceTier(chicken) - 2 * ChickenUtils.getDNAStrength(chicken)) / getSpeed();
+            // at least 1 tick, otherwise high speed machines would get a non-positive duration
+            int speed = Math.max(1, (config.getResourceBaseTime() + dna.getTier() - 2 * ChickenUtils.getDNAStrength(dna)) / getSpeed());
             MachineRecipe recipe = new MachineRecipe(
                 config.isTest() ? 1 : speed,
                 new ItemStack[] {chicken},
@@ -146,9 +149,7 @@ public class ExcitationChamber extends AbstractMachine {
                 ChickenUtils.possiblyHarm(chicken);
                 if (ChickenUtils.getHealth(chicken) <= 0d) {
                     ItemUtils.consumeItem(chicken, false);
-                    GeneticChickengineering.getScheduler().run(() ->
-                        menu.getLocation().getWorld().playSound(menu.getLocation(), Sound.ENTITY_CHICKEN_DEATH, 1f, 1f)
-                    );
+                    playDeathSound(menu);
                     continue;
                 }
             }

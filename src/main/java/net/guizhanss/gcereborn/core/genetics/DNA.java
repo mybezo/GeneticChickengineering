@@ -1,6 +1,5 @@
 package net.guizhanss.gcereborn.core.genetics;
 
-import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.annotation.Nonnull;
@@ -55,11 +54,10 @@ public class DNA {
      */
     public DNA(int typing) {
         this.sequence = new Gene[6];
-        String typeStr = Integer.toBinaryString(typing);
-        String padded = String.format("%6s", typeStr).replaceAll(" ", "0");
-
         for (int i = 0; i < 6; i++) {
-            this.sequence[i] = new Gene(ALLELES[i], 3 * (((int) padded.charAt(i)) - ((int) '0')));
+            // bit (5 - i) of typing determines whether gene i is dominant
+            int bit = (typing >> (5 - i)) & 1;
+            this.sequence[i] = new Gene(ALLELES[i], 3 * bit);
         }
         this.learned = true;
     }
@@ -98,17 +96,16 @@ public class DNA {
     public DNA() {
         var config = GeneticChickengineering.getConfigService();
         this.sequence = new Gene[6];
-        int[] mutations = ThreadLocalRandom.current().ints(0, 6)
-            .distinct().limit(config.getMaxMutation()).toArray();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        boolean[] mutated = new boolean[6];
+        random.ints(0, 6).distinct().limit(config.getMaxMutation()).forEach(x -> mutated[x] = true);
 
         for (int i = 0; i < 6; i++) {
             char notation = Character.toUpperCase(ALLELES[i]);
             char[] markup = {notation, notation};
             // If this index was in the ones randomly chosen,
             // This allele is heterozygous
-            final int z = i;
-            boolean isMutated = Arrays.stream(mutations).anyMatch(x -> x == z);
-            if (isMutated && ThreadLocalRandom.current().nextInt(100) < config.getMutationRate()) {
+            if (mutated[i] && random.nextInt(100) < config.getMutationRate()) {
                 markup[1] = ALLELES[i];
             }
             this.sequence[i] = new Gene(markup);
@@ -118,11 +115,11 @@ public class DNA {
     }
 
     public static boolean isValidSequence(String seq) {
-        return isValidSequence(seq.toCharArray());
+        return seq != null && isValidSequence(seq.toCharArray());
     }
 
     public static boolean isValidSequence(char[] seq) {
-        if (seq.length != 12) {
+        if (seq == null || seq.length != 12) {
             return false;
         }
         for (int i = 0; i < 6; i++) {
@@ -138,7 +135,7 @@ public class DNA {
     @Nonnull
     @Override
     public String toString() {
-        StringBuilder out = new StringBuilder();
+        StringBuilder out = new StringBuilder(12);
         for (int i = 0; i < 6; i++) {
             out.append(this.sequence[i].toString());
         }
@@ -166,11 +163,7 @@ public class DNA {
         for (int i = 0; i < 6; i++) {
             out[i] = this.sequence[i].getState();
         }
-        if (this.learned) {
-            out[6] = 1;
-        } else {
-            out[6] = 0;
-        }
+        out[6] = this.learned ? 1 : 0;
         return out;
     }
 
@@ -185,9 +178,9 @@ public class DNA {
 
     public int getTyping() {
         int out = 0;
-        for (int i = 5; i > -1; i--) {
+        for (int i = 0; i < 6; i++) {
             if (this.sequence[i].isDominant()) {
-                out += (int) Math.pow(2, 5.0 - i);
+                out |= 1 << (5 - i);
             }
         }
         return out;
@@ -195,7 +188,7 @@ public class DNA {
 
     public int getTier() {
         int out = 0;
-        for (int i = 5; i > -1; i--) {
+        for (int i = 0; i < 6; i++) {
             if (!this.sequence[i].isDominant()) {
                 out++;
             }

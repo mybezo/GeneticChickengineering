@@ -3,14 +3,12 @@ package net.guizhanss.gcereborn.items.machines;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.bukkit.Sound;
 import org.bukkit.inventory.ItemStack;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.inventory.InvUtils;
-import io.github.thebusybiscuit.slimefun4.libraries.dough.items.ItemUtils;
 
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -61,8 +59,9 @@ public class GeneticSequencer extends AbstractMachine {
                 continue;
             }
             if (config.isPainEnabled() && ChickenUtils.getHealth(learnedChicken) <= 0d) {
-                ItemUtils.consumeItem(chicken, false);
-                menu.getBlock().getWorld().playSound(menu.getLocation(), Sound.ENTITY_CHICKEN_DEATH, 1f, 1f);
+                // consume the chicken in the machine, not the local clone
+                menu.consumeItem(slot, 1);
+                playDeathSound(menu);
                 continue;
             }
             menu.consumeItem(slot, 1);
