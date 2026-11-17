@@ -142,5 +142,9 @@ public final class Items {
         }
 
         ChickenTypes.registerChickens();
+
+        // compressed machines need the original machines to be registered first
+        CompressedMachines.setup(plugin);
+        Groups.setupGuide();
     }
 }

@@ -9,6 +9,7 @@ console:
     chickens: "Registered {0} chickens."
     integrations: "Loading integrations..."
     integration: "Detected {0}, initiating integration..."
+    compressed: "Registered {0} compressed machines."
   database:
     connect-fail: "Cannot connect to database!"
     connected: "Connected to database!"
@@ -21,6 +22,12 @@ categories:
     name: "&eGenetic Chickengineering"
   DIRECTORY_ICON:
     name: "&eGCE Chicken Directory"
+  COMPRESSED_ITEMS:
+    name: "&dCompressed Items"
+  COMPRESSED_MACHINES:
+    name: "&bCompressed Machine"
+  COMPRESSED_HIDDEN:
+    name: "&7Compressed Machine (lower multipliers)"
 
 recipes:
   from_net:
@@ -86,6 +93,9 @@ items:
 
 lores:
   right-click-to-use: "&eRight Click&7 to use"
+  compressed:
+    machine: "&7Combines &f{0} &7machines into one."
+    multiplier: "&eMultiplier: &fx{0}"
   chicken:
     health: "&7Health: &e{0}"
     name: "&7Name: &e{0}"

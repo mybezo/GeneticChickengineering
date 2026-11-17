@@ -1,6 +1,10 @@
 package net.guizhanss.gcereborn.core.services;
 
+import java.io.File;
+
 import javax.annotation.Nonnull;
+
+import io.github.thebusybiscuit.slimefun4.libraries.dough.config.Config;
 
 import net.guizhanss.gcereborn.GeneticChickengineering;
 import net.guizhanss.guizhanlib.slimefun.addon.AddonConfig;
@@ -32,9 +36,30 @@ public final class ConfigurationService {
     private int growthChamberTime;
     private boolean commandsEnabled;
 
+    /**
+     * The config of compressed machines ({@code compressed.yml}).
+     * Changes only apply after a restart, since items cannot be registered later.
+     */
+    private final Config compressedConfig;
+
     public ConfigurationService(GeneticChickengineering plugin) {
         config = new AddonConfig(plugin, "config.yml");
         reload();
+
+        if (!new File(plugin.getDataFolder(), "compressed.yml").exists()) {
+            plugin.saveResource("compressed.yml", false);
+        }
+        compressedConfig = new Config(plugin, "compressed.yml");
+        // add the missing options, existing values are kept (machine options are added when registering)
+        compressedConfig.setDefaultValue("enabled", true);
+        for (int multiplier : new int[] {8, 16, 32, 64}) {
+            compressedConfig.setDefaultValue("multipliers.x" + multiplier, true);
+        }
+        compressedConfig.save();
+    }
+
+    public boolean isCompressedEnabled() {
+        return compressedConfig.getBoolean("enabled");
     }
 
     public void reload() {

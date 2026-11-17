@@ -89,10 +89,62 @@ public class ExcitationChamber extends AbstractMachine {
         super.tick(b);
         BlockMenu inv = BlockStorage.getInventory(b);
         MachineProcessor<CraftingOperation> processor = getMachineProcessor();
-        if (processor.getOperation(b) != null && findNextRecipe(inv) == null) {
+        CraftingOperation operation = processor.getOperation(b);
+        if (operation != null && !canContinue(inv, operation)) {
             processor.endOperation(b);
             inv.replaceExistingItem(INFO_SLOT, GuiItems.BLACK_PANE);
         }
+    }
+
+    /**
+     * Checks every tick whether the current operation can continue.
+     * The chicken can be hurt every tick when pain is enabled.
+     *
+     * @param menu      The {@link BlockMenu} of the machine.
+     * @param operation The current {@link CraftingOperation}.
+     * @return Whether the operation can continue.
+     */
+    protected boolean canContinue(@Nonnull BlockMenu menu, @Nonnull CraftingOperation operation) {
+        return findNextRecipe(menu) != null;
+    }
+
+    /**
+     * Get the duration of producing a resource, in seconds.
+     *
+     * @param dna The {@link DNA} of the chicken.
+     * @return The duration in seconds.
+     */
+    protected int getDuration(@Nonnull DNA dna) {
+        var config = GeneticChickengineering.getConfigService();
+        if (config.isTest()) {
+            return 1;
+        }
+        // at least 1, otherwise high speed machines would get a non-positive duration
+        return Math.max(1, (config.getResourceBaseTime() + dna.getTier() - 2 * ChickenUtils.getDNAStrength(dna)) / getSpeed());
+    }
+
+    /**
+     * Apply pain to the chicken when pain is enabled.
+     *
+     * @param menu    The {@link BlockMenu} of the machine.
+     * @param chicken The chicken {@link ItemStack} in the machine.
+     * @return Whether the chicken can work.
+     */
+    protected boolean applyPain(@Nonnull BlockMenu menu, @Nonnull ItemStack chicken) {
+        var config = GeneticChickengineering.getConfigService();
+        if (!config.isPainEnabled()) {
+            return true;
+        }
+        if (!ChickenUtils.survivesPain(chicken) && !config.isPainDeathEnabled()) {
+            return false;
+        }
+        ChickenUtils.possiblyHarm(chicken);
+        if (ChickenUtils.getHealth(chicken) <= 0d) {
+            ItemUtils.consumeItem(chicken, false);
+            playDeathSound(menu);
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -131,10 +183,8 @@ public class ExcitationChamber extends AbstractMachine {
              *  Tier 5 | 17-19 sec | 8-9 sec
              *  Tier 6 | 20 sec    | 10 sec
              */
-            // at least 1 tick, otherwise high speed machines would get a non-positive duration
-            int speed = Math.max(1, (config.getResourceBaseTime() + dna.getTier() - 2 * ChickenUtils.getDNAStrength(dna)) / getSpeed());
             MachineRecipe recipe = new MachineRecipe(
-                config.isTest() ? 1 : speed,
+                getDuration(dna),
                 new ItemStack[] {chicken},
                 new ItemStack[] {chickResource}
             );
@@ -142,16 +192,8 @@ public class ExcitationChamber extends AbstractMachine {
                 continue;
             }
 
-            if (config.isPainEnabled()) {
-                if (!ChickenUtils.survivesPain(chicken) && !config.isPainDeathEnabled()) {
-                    continue;
-                }
-                ChickenUtils.possiblyHarm(chicken);
-                if (ChickenUtils.getHealth(chicken) <= 0d) {
-                    ItemUtils.consumeItem(chicken, false);
-                    playDeathSound(menu);
-                    continue;
-                }
+            if (!applyPain(menu, chicken)) {
+                continue;
             }
 
             return recipe;
