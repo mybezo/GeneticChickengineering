@@ -1,10 +1,14 @@
 package net.guizhanss.gcereborn.items.chicken;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -107,6 +111,37 @@ public final class ChickenTypes {
     @Nonnull
     public static ItemStack getProduct(int typing) {
         return TYPES.get(typing).getProduct();
+    }
+
+    /**
+     * Get the chicken type by its name (case-insensitive), e.g. {@code iron_dust}.
+     *
+     * @param name The name of the chicken type.
+     * @return The chicken type, or null if not found.
+     */
+    @Nullable
+    public static Integer getTypingByName(@Nonnull String name) {
+        String upper = name.toUpperCase(Locale.ROOT);
+        for (Map.Entry<Integer, ChickenProduct> entry : TYPES.entrySet()) {
+            if (entry.getValue().getName().equals(upper)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the names of all chicken types.
+     *
+     * @return The names of all chicken types.
+     */
+    @Nonnull
+    public static List<String> getNames() {
+        List<String> names = new ArrayList<>(TYPES.size());
+        for (ChickenProduct product : TYPES.values()) {
+            names.add(product.getName());
+        }
+        return names;
     }
 
     public static void registerChickens() {

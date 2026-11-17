@@ -7,6 +7,7 @@ import org.bukkit.command.PluginCommand;
 
 import net.guizhanss.gcereborn.GeneticChickengineering;
 import net.guizhanss.gcereborn.core.commands.subcommands.CalcChanceCommand;
+import net.guizhanss.gcereborn.core.commands.subcommands.GiveChickenCommand;
 import net.guizhanss.gcereborn.core.commands.subcommands.MakeChickenCommand;
 import net.guizhanss.guizhanlib.minecraft.commands.BaseCommand;
 
@@ -25,6 +26,9 @@ public final class GCECommand extends BaseCommand {
         }
         if (config.isSubCommandEnabled("calcchance")) {
             addSubCommand(new CalcChanceCommand(this));
+        }
+        if (config.isSubCommandEnabled("give")) {
+            addSubCommand(new GiveChickenCommand(this));
         }
     }
 

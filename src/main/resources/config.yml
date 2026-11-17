@@ -57,3 +57,6 @@ commands:
     calcchance:
       enabled: true
       permission: geneticchickengineering.command.calcchance
+    give:
+      enabled: true
+      permission: geneticchickengineering.command.give

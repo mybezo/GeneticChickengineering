@@ -20,6 +20,9 @@ permissions:
   geneticchickengineering.command.makechicken:
     description: Allows a player to make Pocket Chickens from command
     default: op
+  geneticchickengineering.command.give:
+    description: Allows a player to get a Pocket Chicken of a chicken type from command
+    default: op
   geneticchickengineering.command.calcchance:
     description: Allows a player to calculate the chances of getting a specific offspring from two parents
     default: true
