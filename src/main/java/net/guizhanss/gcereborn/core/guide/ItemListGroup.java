@@ -24,6 +24,8 @@ import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 
 import city.norain.slimefun4.VaultIntegration;
 
+import net.guizhanss.gcereborn.GeneticChickengineering;
+
 /**
  * A guide menu that displays the items of an {@link ItemGroup},
  * the same way the Slimefun guide does (permissions and researches included).
@@ -90,24 +92,23 @@ public class ItemListGroup extends GuideMenuGroup {
     @Nonnull
     @ParametersAreNonnullByDefault
     private static ItemStack getLockedItem(Player p, SlimefunItem sfItem, Research research) {
-        var localization = Slimefun.getLocalization();
+        // the addon's own strings are used, not every Slimefun version has the "guide.locked-item" messages
+        var localization = GeneticChickengineering.getLocalization();
         String cost;
         if (VaultIntegration.isEnabled()) {
-            cost = localization.getMessage(p, "guide.locked-item.currency-cost")
-                .replace("%cost%", String.format("%.2f", research.getCurrencyCost()));
+            cost = localization.getString("guide.locked.currency-cost", String.format("%.2f", research.getCurrencyCost()));
         } else {
-            cost = localization.getMessage(p, "guide.locked-item.level-cost")
-                .replace("%cost%", String.valueOf(research.getLevelCost()));
+            cost = localization.getString("guide.locked.level-cost", research.getLevelCost());
         }
         return new CustomItemStack(
             ChestMenuUtils.getNoPermissionItem(),
             "&f" + ItemUtils.getItemName(sfItem.getItem()),
             "&7" + sfItem.getId(),
-            "&4&l" + localization.getMessage(p, "guide.locked"),
+            "&4&l" + Slimefun.getLocalization().getMessage(p, "guide.locked"),
             "",
-            localization.getMessage(p, "guide.locked-item.click-to-unlock"),
+            localization.getString("guide.locked.click-to-unlock"),
             "",
-            localization.getMessage(p, "guide.locked-item.cost-header") + cost
+            cost
         );
     }
 }

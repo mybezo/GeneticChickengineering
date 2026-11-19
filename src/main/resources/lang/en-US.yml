@@ -183,6 +183,12 @@ commands:
   give:
     description: "&fGive yourself an adult chicken of the given type."
 
+guide:
+  locked:
+    click-to-unlock: "&a> Click to unlock"
+    level-cost: "&7Cost: &b{0} Level(s)"
+    currency-cost: "&7Cost: &b{0}"
+
 messages:
   no-permission: "&cYou do not have permission!"
   no-console: "&cYou must be a player to do this!"
